@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IndieRadio FM - Suara Karya Independen</title>
+    
+    <!-- Ikon Tab Halaman (Favicon) -->
+    <link rel="icon" type="image/png" href="iNDIERADIO_FM__1_-removebg-preview.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- LocalForage (Penyimpanan Offline Skala Besar) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    
+    <!-- Tailwind CSS Engine -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            background-color: #050505; /* True Black */
+        }
+        .glassmorphism {
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .neon-glow-red {
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.35);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(220, 38, 38, 0.3);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(220, 38, 38, 0.6);
+        }
+        input, select, textarea {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        input:focus, select:focus, textarea:focus {
+            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.4);
+        }
+    </style>
+</head>
+<body class="text-neutral-100 min-h-screen flex flex-col selection:bg-red-600 selection:text-white">
+
+    <nav class="glassmorphism sticky top-0 z-40 w-full px-4 md:px-8 py-3 border-b border-white/5 flex items-center justify-between">
+        <div class="flex items-center gap-3 cursor-pointer group" onclick="window.switchTab('dashboard')">
+            <img src="image_808088.png" alt="IndieRadio FM Logo" class="h-14 md:h-16 object-contain bg-white p-1 rounded-lg shadow-lg group-hover:scale-105 transition duration-300" onerror="this.onerror=null; this.src='https://placehold.co/200x50/ffffff/dc2626?text=IndieRadio+FM';">
+        </div>
+
+        <div class="flex items-center gap-3 md:gap-4">
+            <!-- Cloud Status Indicator Badge -->
+            <div id="cloud-status-badge" class="flex items-center gap-1.5 text-[10px] md:text-xs font-semibold px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 transition-all duration-300">
+                <span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span>
+                <span id="cloud-status-text">Menghubungkan...</span>
+            </div>
+            
+            <button onclick="window.switchTab('dashboard')" id="nav-dashboard" class="px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-300 flex items-center gap-2 bg-red-600/20 text-red-400 border border-red-500/30">
+                <i class="fa-solid fa-music"></i> Eksplorasi
+            </button>
+            <button onclick="window.switchTab('upload')" id="nav-upload" class="px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-300 flex items-center gap-2 text-neutral-400 hover:text-white hover:bg-white/5">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Rilis Karya
+            </button>
+        </div>
+    </nav>
+
+    <!-- Konten Utama Multi-Tab dengan ruang scroll ekstra agar tidak tertutup player bawah -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 md:py-8 pb-64 md:pb-80">
+        
+        <!-- Tab 1: Dashboard / Eksplorasi Rilisan -->
+        <div id="tab-dashboard" class="space-y-8 block">
+            <!-- Hero Banner -->
+            <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-neutral-950 via-red-950/40 to-black p-6 md:p-12 border border-red-900/30 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 shadow-2xl">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_120%,rgba(220,38,38,0.15),transparent)] pointer-events-none"></div>
+                <div class="space-y-4 max-w-xl z-10 text-center md:text-left">
+                    <span class="px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-semibold uppercase tracking-wider">Suara Baru Nusantara</span>
+                    <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">Wadah Terbaik Rilis Musik <span class="text-red-500">Independenmu</span></h1>
+                    <p class="text-neutral-400 text-sm md:text-base leading-relaxed">Unggah, dengarkan, dan dukung karya-karya murni dari para seniman lokal indie Indonesia tanpa batasan perantara.</p>
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+                        <button onclick="window.switchTab('upload')" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-red-600 hover:bg-red-500 font-bold transition-all duration-300 flex items-center justify-center gap-2 hover:-translate-y-0.5 shadow-lg shadow-red-600/30">
+                            <i class="fa-solid fa-plus-circle"></i> Mulai Rilis Lagu
+                        </button>
+                        <a href="#daftar-karya" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-neutral-800/80 hover:bg-neutral-700 font-semibold text-neutral-200 transition-all text-center">
+                            Dengarkan Sekarang
+                        </a>
+                    </div>
+                </div>
+                <div class="relative z-10 w-full max-w-[280px] aspect-square rounded-2xl overflow-hidden bg-neutral-950 border border-red-500/20 shadow-2xl flex items-center justify-center group">
+                    <canvas id="visualizer-hero" class="absolute inset-0 w-full h-full opacity-80 pointer-events-none"></canvas>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent flex flex-col justify-end p-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                            <span class="text-xs font-semibold text-neutral-300">Siaran Langsung Radio</span>
+                        </div>
+                        <h3 class="font-extrabold text-white text-base truncate mt-1" id="hero-playing-title">Tidak Memutar Lagu</h3>
+                        <p class="text-xs text-neutral-400 truncate" id="hero-playing-artist">Silakan pilih lagu di bawah</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian Rilisan Terbaru -->
+            <div id="daftar-karya" class="space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tight text-white">Rilisan Terbaru</h2>
+                        <p class="text-sm text-neutral-400 mt-1">Dengarkan karya orisinal terbaru yang dirilis langsung oleh para musisi.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-full font-bold" id="track-counter">0 Lagu Terdaftar</span>
+                    </div>
+                </div>
+
+                <!-- Grid Rilisan -->
+                <div id="rilisan-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dinamis Diisi via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Upload / Formulir Rilis Karya -->
+        <div id="tab-upload" class="hidden max-w-3xl mx-auto">
+            <div class="glassmorphism rounded-3xl p-6 md:p-10 space-y-8 shadow-2xl border-red-500/10">
+                <div class="space-y-2 border-b border-white/5 pb-6">
+                    <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+                        <i class="fa-solid fa-guitar text-red-500 animate-bounce"></i> Rilis Karya Pertamamu
+                    </h2>
+                    <p class="text-sm text-neutral-400">Isi formulir berikut dengan informasi orisinal karyamu agar pendengar dapat mengenal karyamu lebih dekat.</p>
+                </div>
+
+                <form id="upload-form" onsubmit="window.handleFormSubmit(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label for="judul" class="block text-sm font-semibold text-neutral-300">Judul Lagu <span class="text-red-500">*</span></label>
+                            <input type="text" id="judul" required placeholder="Contoh: Senja Bersinar" 
+                                class="w-full bg-neutral-900/80 border border-white/10 rounded-xl px-4 py-3 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="artis" class="block text-sm font-semibold text-neutral-300">Nama Musisi / Band <span class="text-red-500">*</span></label>
+                            <input type="text" id="artis" required placeholder="Contoh: Sang Pengelana" 
+                                class="w-full bg-neutral-900/80 border border-white/10 rounded-xl px-4 py-3 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-2">
+                            <label for="genre" class="block text-sm font-semibold text-neutral-300">Genre Utama <span class="text-red-500">*</span></label>
+                            <input type="text" id="genre" required placeholder="Contoh: Indie Pop, Synthwave, dll" 
+                                class="w-full bg-neutral-900/80 border border-white/10 rounded-xl px-4 py-3 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="tipe" class="block text-sm font-semibold text-neutral-300">Tipe Rilis <span class="text-red-500">*</span></label>
+                            <select id="tipe" required onchange="window.toggleAlbumInput(this.value)" class="w-full bg-neutral-900/80 border border-white/10 rounded-xl px-4 py-3 text-neutral-200 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
+                                <option value="Singel" selected>Singel (Single Track)</option>
+                                <option value="Album">Album (Bagian dari Album)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="tahun" class="block text-sm font-semibold text-neutral-300">Tahun Rilis <span class="text-red-500">*</span></label>
+                            <input type="number" id="tahun" required placeholder="Contoh: 2026" min="1900" max="2100" value="2026"
+                                class="w-full bg-neutral-900/80 border border-white/10 rounded-xl px-4 py-3 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
+                        </div>
+                    </div>
+
+                    <div id="album-name-container" class="space-y-2 hidden transition-all duration-300">
+                        <label for="album" class="block text-sm font-semibold text-neutral-300">Nama Album <span class="text-red-500">*</span></label>
+                        <input type="text" id="album" placeholder="Masukkan judul album lengkap" 
+                            class="w-full bg-neutral-900/80 border border-white/10 rounded-xl px-4 py-3 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-neutral-300">Foto Sampul (Cover Art)</label>
+                            <div class="relative group border border-dashed border-white/15 hover:border-red-500/50 rounded-2xl bg-neutral-900/40 p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[140px]">
+                                <input type="file" id="cover-file" accept="image/*" onchange="window.previewImage(this)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                                <div id="cover-placeholder" class="space-y-2 pointer-events-none">
+                                    <i class="fa-regular fa-image text-3xl text-red-500 group-hover:scale-110 transition duration-300"></i>
+                                    <p class="text-xs font-semibold text-neutral-300">Seret atau Klik Unggah Gambar</p>
+                                    <p class="text-[10px] text-neutral-500">Mendukung PNG/JPG maks. 3MB</p>
+                                </div>
+                                <div id="cover-preview-container" class="hidden absolute inset-0 w-full h-full rounded-2xl overflow-hidden bg-neutral-900">
+                                    <img id="cover-preview-img" src="" alt="Cover Preview" class="w-full h-full object-cover">
+                                    <button type="button" onclick="window.removeCover(event)" class="absolute top-2 right-2 bg-black/75 hover:bg-red-600 p-1.5 rounded-lg text-white text-xs transition">
+                                        <i class="fa-solid fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-neutral-300">File Musik <span class="text-red-500">*</span></label>
+                            <div class="relative group border border-dashed border-white/15 hover:border-red-500/50 rounded-2xl bg-neutral-900/40 p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[140px]">
+                                <input type="file" id="audio-file" accept="audio/*" required onchange="window.handleAudioUpload(this)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                                <div id="audio-placeholder" class="space-y-2 pointer-events-none">
+                                    <i class="fa-regular fa-circle-play text-3xl text-red-400 group-hover:scale-110 transition duration-300"></i>
+                                    <p class="text-xs font-semibold text-neutral-300">Pilih File Lagu (MP3, WAV, dll)</p>
+                                    <p class="text-[10px] text-neutral-500">Wajib disertakan untuk demo putar</p>
+                                </div>
+                                <div id="audio-loaded-container" class="hidden absolute inset-0 w-full h-full rounded-2xl bg-red-950/80 flex flex-col items-center justify-center p-3 text-center border border-red-500/30">
+                                    <i class="fa-solid fa-circle-check text-2xl text-red-400 mb-1"></i>
+                                    <p class="text-xs font-bold text-neutral-200 truncate max-w-[200px]" id="audio-file-name">LaguTerpilih.mp3</p>
+                                    <button type="button" onclick="window.removeAudio(event)" class="mt-2 bg-black/60 hover:bg-red-600 px-3 py-1 rounded-lg text-white text-[10px] transition font-semibold">
+                                        Ganti File
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="bio" class="block text-sm font-semibold text-neutral-300">Cerita di Balik Lagu</label>
+                        <textarea id="bio" rows="4" placeholder="Tulis cerita di balik penciptaan lagu ini..." 
+                            class="w-full bg-neutral-900/80 border border-white/10 rounded-xl px-4 py-3 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition resize-none"></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-4 pt-4 border-t border-white/5">
+                        <button type="button" onclick="window.switchTab('dashboard')" class="px-6 py-3 rounded-xl border border-white/10 text-sm font-semibold text-neutral-400 hover:text-white hover:bg-white/5 transition">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-8 py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white text-sm font-bold shadow-lg shadow-red-600/20 hover:-translate-y-0.5 transition duration-300">
+                            Rilis Sekarang
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Audio Player Global -->
+    <div id="audio-player-bar" class="fixed bottom-0 left-0 right-0 z-50 glassmorphism border-t border-red-500/10 p-4 md:px-8 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl">
+        <div class="flex items-center gap-4 w-full md:w-1/3 min-w-0">
+            <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-neutral-900 border border-red-500/20 flex-shrink-0 flex items-center justify-center">
+                <img id="player-cover" src="https://placehold.co/150x150/050505/dc2626?text=IndieRadio" alt="Cover Art" class="w-full h-full object-cover">
+                <div id="player-visualizer-wave" class="hidden absolute inset-0 bg-black/75 flex items-center justify-center gap-0.5">
+                    <span class="w-1 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                    <span class="w-1 h-5 bg-red-400 rounded-full animate-pulse" style="animation-delay: 0.15s"></span>
+                    <span class="w-1 h-2 bg-red-500 rounded-full animate-pulse" style="animation-delay: 0.3s"></span>
+                </div>
+            </div>
+            <div class="min-w-0 flex-grow">
+                <h4 id="player-title" class="font-bold text-neutral-100 text-sm md:text-base truncate">Pilih Karya Terbaik</h4>
+                <p id="player-artist" class="text-xs text-neutral-400 truncate mt-0.5">Ketuk putar di daftar lagu</p>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="player-genre" class="text-[9px] font-bold text-red-400 px-1.5 py-0.5 bg-red-950/60 rounded-full border border-red-800/30 uppercase">Radio</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center gap-2 w-full md:w-1/3">
+            <div class="flex items-center gap-5">
+                <button onclick="window.prevTrack()" class="text-neutral-400 hover:text-white transition text-lg transform active:scale-90">
+                    <i class="fa-solid fa-backward-step"></i>
+                </button>
+                <button onclick="window.togglePlay()" id="master-play-btn" class="w-11 h-11 rounded-full bg-red-600 hover:bg-red-500 text-white flex items-center justify-center text-lg transition duration-300 transform active:scale-95 shadow-lg shadow-red-600/30 border border-red-400/30">
+                    <i class="fa-solid fa-play ml-0.5" id="master-play-icon"></i>
+                </button>
+                <button onclick="window.nextTrack()" class="text-neutral-400 hover:text-white transition text-lg transform active:scale-90">
+                    <i class="fa-solid fa-forward-step"></i>
+                </button>
+            </div>
+            <div class="flex items-center gap-2 w-full text-xs text-neutral-400">
+                <span id="player-current-time">0:00</span>
+                <div class="relative flex-grow h-1.5 bg-neutral-800 rounded-full cursor-pointer group" id="progress-bar-container" onclick="window.seekAudio(event)">
+                    <div id="player-progress" class="absolute left-0 top-0 h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full w-0 transition-all duration-100"></div>
+                    <div id="player-progress-dot" class="hidden group-hover:block absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow border border-neutral-900 pointer-events-none" style="left: 0%"></div>
+                </div>
+                <span id="player-duration">0:00</span>
+            </div>
+        </div>
+
+        <div class="hidden md:flex items-center justify-end gap-3 w-full md:w-1/3">
+            <button onclick="window.toggleMute()" class="text-neutral-400 hover:text-white transition">
+                <i class="fa-solid fa-volume-high" id="volume-icon"></i>
+            </button>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.7" oninput="window.changeVolume(this.value)" 
+                class="w-24 h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-red-600 focus:outline-none">
+        </div>
+    </div>
+
+    <audio id="global-audio" src="" class="hidden"></audio>
+
+    <!-- UI Toast Notification -->
+    <div id="toast" class="fixed top-24 right-6 z-50 transform translate-x-80 opacity-0 transition-all duration-300 glassmorphism px-6 py-4 rounded-2xl flex items-center gap-3 border border-red-500/20 shadow-xl max-w-sm pointer-events-none">
+        <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl" id="toast-icon-container">
+            <i class="fa-solid fa-circle-check text-lg"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm text-neutral-100" id="toast-title">Notifikasi</h4>
+            <p class="text-xs text-neutral-400 mt-0.5" id="toast-message">Pesan...</p>
+        </div>
+    </div>
+
+    <!-- Modal Profil Artis -->
+    <div id="artist-modal" class="fixed inset-0 z-[60] hidden flex-col items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all duration-300 opacity-0" onclick="window.closeArtistModal()">
+        <div class="glassmorphism rounded-3xl w-full max-w-2xl p-6 md:p-8 border border-red-500/20 shadow-2xl transform scale-95 transition-all duration-300 flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar" id="artist-modal-content" onclick="event.stopPropagation()">
+            
+            <div class="flex justify-between items-center mb-6 border-b border-white/5 pb-4 shrink-0">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-user-astronaut text-red-500 animate-pulse"></i> Ruang Seniman Indie
+                </h3>
+                <button onclick="window.closeArtistModal()" class="text-neutral-400 hover:text-white transition w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-red-600/20 hover:text-red-400">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- SECTION VIEW MODE -->
+            <div id="artist-view-section" class="space-y-6 flex-grow flex flex-col">
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 bg-white/5 p-6 rounded-2xl border border-white/5 relative shrink-0">
+                    <button onclick="window.toggleArtistEditMode(true)" class="absolute top-4 right-4 text-[10px] sm:text-xs bg-neutral-800 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition shadow-lg flex items-center gap-2 border border-white/10 hover:border-red-500">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Profil
+                    </button>
+                    <img id="view-artist-photo" src="" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-red-500/50 shadow-xl shadow-red-500/20 bg-neutral-900 shrink-0">
+                    <div class="flex-grow text-center sm:text-left mt-2 sm:mt-0 w-full">
+                        <h2 id="view-artist-name" class="text-xl sm:text-2xl font-extrabold text-white mb-2 truncate">Nama Artis</h2>
+                        <p id="view-artist-bio" class="text-xs sm:text-sm text-neutral-400 leading-relaxed whitespace-pre-line">Biografi artis...</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4 flex-grow flex flex-col min-h-0">
+                    <div class="flex items-center gap-2 border-b border-white/5 pb-2 shrink-0">
+                        <i class="fa-solid fa-compact-disc text-red-500"></i>
+                        <h4 class="text-sm font-extrabold text-neutral-300 uppercase tracking-widest">Katalog Diskografi</h4>
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        <button type="button" onclick="window.switchCatalogTab('singles')" id="tab-cat-singles" class="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-red-600/20 text-red-400 border border-red-500/30">Singel</button>
+                        <button type="button" onclick="window.switchCatalogTab('albums')" id="tab-cat-albums" class="px-4 py-2 rounded-xl text-xs font-bold transition-all text-neutral-400 hover:text-white bg-white/5">Album</button>
+                    </div>
+                    <div class="bg-neutral-950 rounded-2xl p-4 border border-white/5 flex-grow overflow-y-auto custom-scrollbar min-h-[150px]">
+                        <div id="catalog-singles-list" class="space-y-2"></div>
+                        <div id="catalog-albums-list" class="space-y-2 hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION EDIT MODE (FORM) -->
+            <form id="artist-edit-section" onsubmit="window.saveArtistProfile(event)" class="space-y-6 hidden flex-grow">
+                <div class="flex flex-col md:flex-row items-center gap-6 bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="relative w-24 h-24 rounded-full overflow-hidden border-2 border-red-600 hover:border-red-400 group cursor-pointer bg-neutral-900 flex items-center justify-center shadow-lg transition-all">
+                            <img id="artist-photo-preview" src="https://placehold.co/150x150/050505/ef4444?text=Artis" alt="Foto Artis" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                                <i class="fa-solid fa-camera text-white text-lg"></i>
+                            </div>
+                            <input type="file" id="artist-photo-file" accept="image/*" onchange="window.previewArtistPhoto(this)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        </div>
+                    </div>
+                    <div class="flex-grow space-y-3 w-full">
+                        <div class="space-y-1">
+                            <label class="block text-xs font-semibold text-neutral-400">Nama Seniman <span class="text-red-500">*</span></label>
+                            <input type="text" id="artist-name-input" required class="w-full bg-neutral-900/60 border border-white/10 rounded-xl px-4 py-2.5 text-neutral-200 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-semibold text-neutral-400">Biografi Seniman</label>
+                            <textarea id="artist-bio-input" rows="4" class="w-full bg-neutral-900/60 border border-white/10 rounded-xl px-4 py-2.5 text-neutral-200 text-xs focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t border-white/5">
+                    <button type="button" onclick="window.toggleArtistEditMode(false)" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-neutral-400 hover:bg-white/5 hover:text-white transition">Batal</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-bold shadow-lg shadow-red-600/20 transition">
+                        Simpan Profil
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT & FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const DEFAULT_RELEASES = [
+            {
+                id: "def-1", judul: "Hening Di Langit Malam", artis: "Biru Jingga", genre: "Indie Pop", tahun: 2024, tipe: "Singel", album: "",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&auto=format&fit=crop&q=80",
+                audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", isDefault: true,
+                artisBio: "Duo akustik minimalis.", artisPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+            },
+            {
+                id: "def-2", judul: "Distorsi Realita", artis: "Neon Rebellion", genre: "Rock Alternatif", tahun: 2025, tipe: "Album", album: "Lari Dari Distopia",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&auto=format&fit=crop&q=80",
+                audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", isDefault: true,
+                artisBio: "Kolektif noise-rock.", artisPhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
+            }
+        ];
+
+        window.state = {
+            activeTab: 'dashboard', releases: [], currentTrackIndex: null, isPlaying: false, isMuted: false, lastVolume: 0.7,
+            visualizer: { ctx: null, analyser: null, audioContext: null }, dbRef: null, isCloudActive: false, appIdGlobal: 'indieradio-fm'
+        };
+
+        window.addEventListener('load', () => {
+            initApp();
+            window.initVisualizer();
+        });
+
+        async function initApp() {
+            try {
+                const stored = await localforage.getItem("indie_radio_releases");
+                window.state.releases = stored ? stored : [...DEFAULT_RELEASES];
+            } catch (e) {
+                window.state.releases = [...DEFAULT_RELEASES];
+            }
+            window.renderReleases();
+            setupAudioEventListeners();
+            initCloudEngine();
+        }
+
+        function initCloudEngine() {
+            try {
+                if (typeof __firebase_config === 'undefined' || !__firebase_config) throw new Error("No config");
+                const firebaseConfig = JSON.parse(__firebase_config);
+                window.state.appIdGlobal = typeof __app_id !== 'undefined' ? __app_id : 'indieradio-fm';
+                
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+                const auth = getAuth(app);
+                window.state.dbRef = db;
+
+                signInAnonymously(auth).then(() => {
+                    const q = query(collection(db, 'artifacts', window.state.appIdGlobal, 'public', 'data', 'releases'));
+                    onSnapshot(q, (snapshot) => {
+                        window.state.isCloudActive = true;
+                        document.getElementById('cloud-status-badge').className = "flex items-center gap-1.5 text-[10px] md:text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                        document.getElementById('cloud-status-text').textContent = "Cloud Aktif";
+                        
+                        let cloudData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                        
+                        localforage.getItem("indie_radio_releases").then(stored => {
+                            let localOnly = (stored || []).filter(s => s.id && s.id.toString().startsWith('custom-'));
+                            
+                            if (cloudData.length === 0) {
+                                DEFAULT_RELEASES.forEach(track => {
+                                    const tr = { ...track };
+                                    delete tr.id;
+                                    addDoc(collection(db, 'artifacts', window.state.appIdGlobal, 'public', 'data', 'releases'), tr);
+                                });
+                            } else {
+                                window.state.releases = [...localOnly, ...cloudData]; 
+                                window.renderReleases(); 
+                            }
+                        });
+                    }, (err) => fallbackLocal("Izin Terbatas"));
+                }).catch(() => fallbackLocal("Auth Gagal"));
+            } catch (err) { fallbackLocal("Mode Offline"); }
+        }
+
+        async function fallbackLocal(reason) {
+            window.state.isCloudActive = false;
+            document.getElementById('cloud-status-badge').className = "flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20";
+            document.getElementById('cloud-status-text').textContent = reason;
+            
+            try {
+                const stored = await localforage.getItem("indie_radio_releases");
+                window.state.releases = stored ? stored : [...DEFAULT_RELEASES];
+            } catch (e) {
+                window.state.releases = [...DEFAULT_RELEASES];
+            }
+            window.renderReleases();
+        }
+
+        // --- RENDER RELEASES ---
+        window.renderReleases = function() {
+            const grid = document.getElementById('rilisan-grid');
+            grid.innerHTML = '';
+            document.getElementById('track-counter').textContent = `${window.state.releases.length} Lagu Terdaftar`;
+
+            window.state.releases.forEach((song, index) => {
+                const isCurrent = window.state.currentTrackIndex === index;
+                const isPlayingThis = isCurrent && window.state.isPlaying;
+                const safeArtis = song.artis || "Unknown";
+                const escapedArtis = safeArtis.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                
+                // Menampilkan tombol hapus untuk semua lagu
+                const deleteBtnHTML = `<button onclick="window.deleteTrack(${index}, event)" class="px-3 py-1.5 rounded-lg bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white text-xs font-bold transition shadow-sm" title="Hapus Lagu">
+                        <i class="fa-solid fa-trash-alt"></i>
+                    </button>`;
+
+                const card = document.createElement('div');
+                card.className = `glassmorphism rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between ${isCurrent ? 'border-red-500/50 ring-1 ring-red-500/30' : 'border-white/5'}`;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="relative aspect-video w-full overflow-hidden bg-neutral-900">
+                            <img src="${song.cover}" onerror="this.src='https://placehold.co/400x250/050505/dc2626?text=IndieRadio'" alt="${song.judul}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                <button onclick="window.playTrack(${index})" class="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg hover:bg-red-500 active:scale-90 transition">
+                                    <i class="fa-solid ${isPlayingThis ? 'fa-pause' : 'fa-play ml-0.5'} text-lg"></i>
+                                </button>
+                            </div>
+                            <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-neutral-950/80 text-[10px] font-extrabold text-red-400 tracking-wider uppercase border border-red-500/30">${song.genre}</span>
+                        </div>
+                        <div class="p-5 space-y-3">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="min-w-0">
+                                    <h3 class="font-bold text-lg text-neutral-100 truncate group-hover:text-red-400 transition-colors">${song.judul}</h3>
+                                    <button onclick="window.openArtistModal('${escapedArtis}', event)" class="group/artist flex items-center gap-2 mt-1.5 cursor-pointer text-left" title="Edit Profil Artis">
+                                        <img src="${song.artisPhoto || 'https://placehold.co/100x100/050505/ef4444?text=' + encodeURIComponent(safeArtis.charAt(0))}" class="w-5 h-5 rounded-full object-cover border border-white/20 group-hover/artist:border-red-400 transition flex-shrink-0">
+                                        <p class="text-xs text-neutral-400 font-semibold truncate group-hover/artist:text-red-400 transition">${safeArtis}</p>
+                                    </button>
+                                </div>
+                                <span class="text-[10px] font-bold text-neutral-400 flex-shrink-0 bg-white/5 px-2 py-1 rounded border border-white/5">${song.tahun}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-5 pb-5 pt-2 flex items-center justify-between border-t border-white/5">
+                        <span class="text-[10px] text-neutral-500 font-bold tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-compact-disc text-xs animate-spin" style="animation-duration: 4s"></i> ${song.tipe === 'Album' ? 'ALBUM TRACK' : 'SINGEL'}
+                        </span>
+                        <div class="flex gap-2">
+                            ${deleteBtnHTML}
+                            <button onclick="window.playTrack(${index})" class="px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition ${isPlayingThis ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white'}">
+                                <i class="fa-solid ${isPlayingThis ? 'fa-pause' : 'fa-play'}"></i> ${isPlayingThis ? 'Memutar' : 'Dengarkan'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- UPLOAD FORM ---
+        window.handleFormSubmit = async function(event) {
+            event.preventDefault();
+            const judul = document.getElementById('judul').value.trim();
+            const artis = document.getElementById('artis').value.trim();
+            const tipe = document.getElementById('tipe').value;
+            const album = tipe === 'Album' ? document.getElementById('album').value.trim() : '';
+
+            if (!window.tempAudioUrl) { window.showToast("Data Kurang", "Harap unggah berkas musik.", "red"); return; }
+
+            const newSong = {
+                judul: judul, artis: artis, genre: document.getElementById('genre').value, tipe: tipe, album: album,
+                tahun: parseInt(document.getElementById('tahun').value) || 2026, bio: document.getElementById('bio').value.trim(),
+                cover: window.tempCoverUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=80',
+                audio: window.tempAudioUrl, isDefault: false, artisBio: `Karya resmi ${artis}.`,
+                artisPhoto: 'https://placehold.co/150x150/050505/dc2626?text=' + encodeURIComponent(artis.charAt(0))
+            };
+
+            if (window.state.isCloudActive && window.state.dbRef) {
+                try {
+                    const trackToCloud = { ...newSong };
+                    delete trackToCloud.id; 
+                    
+                    if (trackToCloud.audio && trackToCloud.audio.length > 800000) {
+                         throw new Error("File audio terlalu besar untuk Cloud. Disimpan secara lokal.");
+                    }
+
+                    await addDoc(collection(window.state.dbRef, 'artifacts', window.state.appIdGlobal, 'public', 'data', 'releases'), trackToCloud);
+                    window.showToast("Rilis Berhasil", `${judul} berhasil didistribusikan ke Cloud.`, "green");
+                } catch (e) { 
+                    console.warn("Cloud Error:", e);
+                    window.showToast("Info Penyimpanan", e.message || "Gagal ke Cloud. Disimpan lokal.", "amber");
+                    saveLokal(newSong); 
+                }
+            } else { saveLokal(newSong); }
+
+            document.getElementById('upload-form').reset();
+            window.removeCover(new Event('click')); window.removeAudio(new Event('click'));
+            window.switchTab('dashboard');
+        };
+
+        async function saveLokal(songObj) {
+            songObj.id = 'custom-' + Date.now();
+            
+            let stored = await localforage.getItem("indie_radio_releases") || [];
+            stored.unshift(songObj);
+            
+            try {
+                await localforage.setItem("indie_radio_releases", stored);
+                window.state.releases.unshift(songObj);
+                window.renderReleases();
+                window.showToast("Rilis Berhasil", `${songObj.judul} tersimpan permanen di perangkat.`, "green");
+            } catch (error) {
+                console.error("LocalForage Error:", error);
+                window.showToast("Gagal Menyimpan", "Memori perangkat tidak mencukupi.", "red");
+            }
+        }
+
+        // --- DELETE TRACK ---
+        window.deleteTrack = async function(index, event) {
+            event.stopPropagation();
+            const song = window.state.releases[index];
+            if (window.state.currentTrackIndex === index) { 
+                document.getElementById('global-audio').pause(); 
+                window.state.isPlaying = false; 
+                window.state.currentTrackIndex = null; 
+                window.updatePlayerUI(); 
+            }
+            
+            if (window.state.isCloudActive && window.state.dbRef && song.id && !song.id.toString().startsWith('custom-') && !song.id.toString().startsWith('def-')) {
+                try {
+                    await deleteDoc(doc(window.state.dbRef, 'artifacts', window.state.appIdGlobal, 'public', 'data', 'releases', song.id));
+                    window.showToast("Dihapus", "Karya ditarik dari Cloud.", "green");
+                } catch (e) { deleteLokal(song.id, index); }
+            } else { deleteLokal(song.id, index); }
+        };
+
+        async function deleteLokal(id, stateIndex) {
+            window.state.releases.splice(stateIndex, 1);
+            
+            if (id && id.toString().startsWith('custom-')) {
+                let stored = await localforage.getItem("indie_radio_releases") || [];
+                stored = stored.filter(s => s.id !== id);
+                await localforage.setItem("indie_radio_releases", stored);
+            }
+            
+            window.renderReleases();
+            window.showToast("Dihapus", "Karya dihapus dari perangkat.", "green");
+        }
+
+        // --- ARTIST PROFILE ---
+        window.saveArtistProfile = async function(event) {
+            event.preventDefault();
+            const newName = document.getElementById('artist-name-input').value.trim();
+            const newBio = document.getElementById('artist-bio-input').value.trim();
+            const currentPhoto = document.getElementById('artist-photo-preview').src;
+            if (!newName || !window.currentEditArtistName) return;
+
+            window.state.releases.forEach(song => {
+                if (song.artis.toLowerCase() === window.currentEditArtistName.toLowerCase()) {
+                    song.artis = newName; song.artisBio = newBio; song.artisPhoto = currentPhoto;
+                }
+            });
+
+            let stored = await localforage.getItem("indie_radio_releases") || [];
+            let localUpdated = false;
+            stored.forEach(song => {
+                if (song.artis.toLowerCase() === window.currentEditArtistName.toLowerCase()) {
+                    song.artis = newName; song.artisBio = newBio; song.artisPhoto = currentPhoto;
+                    localUpdated = true;
+                }
+            });
+            if(localUpdated) {
+                await localforage.setItem("indie_radio_releases", stored);
+            }
+
+            if (window.state.isCloudActive && window.state.dbRef) {
+                try {
+                    const artistSongs = window.state.releases.filter(song => song.artis === newName);
+                    for (let song of artistSongs) {
+                        if (song.id && !song.id.toString().startsWith('custom-') && !song.id.toString().startsWith('def-')) {
+                            const docRef = doc(window.state.dbRef, 'artifacts', window.state.appIdGlobal, 'public', 'data', 'releases', song.id);
+                            await updateDoc(docRef, { artis: newName, artisBio: newBio, artisPhoto: currentPhoto });
+                        }
+                    }
+                    window.showToast("Profil Tersimpan", `Profil artis disinkronkan ke Cloud.`, "green");
+                } catch (e) {
+                    console.error("Cloud update error:", e);
+                    window.showToast("Profil Tersimpan", `Profil diperbarui secara Lokal.`, "green");
+                }
+            } else {
+                window.showToast("Profil Tersimpan", `Profil artis disimpan di perangkat.`, "green");
+            }
+            
+            window.renderReleases(); 
+            window.openArtistModal(newName); 
+            if (window.state.currentTrackIndex !== null && window.state.releases[window.state.currentTrackIndex].artis === newName) window.updatePlayerUI();
+        };
+
+        // --- AUDIO PLAYER CORE ---
+        function setupAudioEventListeners() {
+            const audio = document.getElementById('global-audio');
+            audio.addEventListener('timeupdate', () => {
+                const percent = (audio.currentTime / audio.duration) * 100 || 0;
+                document.getElementById('player-progress').style.width = `${percent}%`;
+                document.getElementById('player-progress-dot').style.left = `${percent}%`;
+                document.getElementById('player-current-time').textContent = window.formatTime(audio.currentTime);
+            });
+            audio.addEventListener('loadedmetadata', () => { document.getElementById('player-duration').textContent = window.formatTime(audio.duration); });
+            audio.addEventListener('ended', window.nextTrack);
+            audio.addEventListener('play', () => { window.state.isPlaying = true; window.updatePlayerUI(); });
+            audio.addEventListener('pause', () => { window.state.isPlaying = false; window.updatePlayerUI(); });
+        }
+    </script>
+
+    <!-- UI INTERACTION SCRIPTS -->
+    <script>
+        window.currentEditArtistName = null;
+        window.tempCoverUrl = null; 
+        window.tempAudioUrl = null;
+
+        window.switchTab = function(tabId) {
+            window.state.activeTab = tabId;
+            const tD = document.getElementById('tab-dashboard'), tU = document.getElementById('tab-upload');
+            const nD = document.getElementById('nav-dashboard'), nU = document.getElementById('nav-upload');
+            if (tabId === 'dashboard') {
+                tD.classList.remove('hidden'); tU.classList.add('hidden');
+                nD.className = "px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all flex items-center gap-2 bg-red-600/20 text-red-400 border border-red-500/30";
+                nU.className = "px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all flex items-center gap-2 text-neutral-400 hover:text-white hover:bg-white/5";
+            } else {
+                tU.classList.remove('hidden'); tD.classList.add('hidden');
+                nU.className = "px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all flex items-center gap-2 bg-red-600/20 text-red-400 border border-red-500/30";
+                nD.className = "px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all flex items-center gap-2 text-neutral-400 hover:text-white hover:bg-white/5";
+            }
+        }
+
+        window.toggleAlbumInput = function(value) {
+            const container = document.getElementById('album-name-container'), albumInput = document.getElementById('album');
+            if (value === 'Album') { container.classList.remove('hidden'); albumInput.setAttribute('required', 'true'); } 
+            else { container.classList.add('hidden'); albumInput.removeAttribute('required'); albumInput.value = ''; }
+        }
+
+        window.playTrack = function(index) {
+            const audio = document.getElementById('global-audio');
+            if (window.state.currentTrackIndex === index) { window.togglePlay(); return; }
+            if (window.state.visualizer.audioContext && window.state.visualizer.audioContext.state === 'suspended') window.state.visualizer.audioContext.resume();
+            window.state.currentTrackIndex = index;
+            const song = window.state.releases[index];
+            audio.src = song.audio; audio.load();
+            audio.play().then(() => { window.state.isPlaying = true; window.updatePlayerUI(); window.renderReleases(); })
+                 .catch(() => window.showToast("Gagal", "Tidak dapat memutar file.", "red"));
+        }
+
+        window.togglePlay = function() {
+            const audio = document.getElementById('global-audio');
+            if (window.state.currentTrackIndex === null && window.state.releases.length > 0) { window.playTrack(0); return; }
+            if (window.state.isPlaying) { audio.pause(); window.state.isPlaying = false; } 
+            else { audio.play(); window.state.isPlaying = true; }
+            window.updatePlayerUI(); window.renderReleases();
+        }
+
+        window.nextTrack = function() {
+            if (window.state.releases.length === 0) return;
+            let n = (window.state.currentTrackIndex === null) ? 0 : window.state.currentTrackIndex + 1;
+            if (n >= window.state.releases.length) n = 0;
+            window.playTrack(n);
+        }
+
+        window.prevTrack = function() {
+            if (window.state.releases.length === 0) return;
+            let p = (window.state.currentTrackIndex === null) ? 0 : window.state.currentTrackIndex - 1;
+            if (p < 0) p = window.state.releases.length - 1;
+            window.playTrack(p);
+        }
+
+        window.updatePlayerUI = function() {
+            if (window.state.currentTrackIndex === null) return;
+            const song = window.state.releases[window.state.currentTrackIndex];
+            document.getElementById('player-title').textContent = song.judul;
+            document.getElementById('player-artist').textContent = song.artis;
+            document.getElementById('player-genre').textContent = song.genre;
+            document.getElementById('player-cover').src = song.cover;
+            document.getElementById('hero-playing-title').textContent = song.judul;
+            document.getElementById('hero-playing-artist').textContent = song.artis;
+
+            const icon = document.getElementById('master-play-icon'), wave = document.getElementById('player-visualizer-wave');
+            if (window.state.isPlaying) { icon.className = "fa-solid fa-pause"; wave.classList.replace('hidden', 'flex'); } 
+            else { icon.className = "fa-solid fa-play ml-0.5"; wave.classList.replace('flex', 'hidden'); }
+        }
+
+        window.seekAudio = function(e) {
+            const audio = document.getElementById('global-audio');
+            const rect = document.getElementById('progress-bar-container').getBoundingClientRect();
+            audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+        }
+
+        window.changeVolume = function(val) {
+            const audio = document.getElementById('global-audio');
+            audio.volume = val; window.state.lastVolume = val;
+            const icon = document.getElementById('volume-icon');
+            if (val == 0) icon.className = "fa-solid fa-volume-xmark";
+            else if (val < 0.4) icon.className = "fa-solid fa-volume-low";
+            else icon.className = "fa-solid fa-volume-high";
+        }
+
+        window.toggleMute = function() {
+            if (window.state.isMuted) { window.state.isMuted = false; window.changeVolume(window.state.lastVolume); document.getElementById('volume-slider').value = window.state.lastVolume; } 
+            else { window.state.isMuted = true; window.changeVolume(0); document.getElementById('volume-slider').value = 0; }
+        }
+
+        window.initVisualizer = function() {
+            const canvas = document.getElementById('visualizer-hero');
+            const ctx = canvas.getContext('2d');
+            window.state.visualizer.ctx = ctx;
+            const resizeCanvas = () => { canvas.width = canvas.parentElement.clientWidth; canvas.height = canvas.parentElement.clientHeight; };
+            resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+
+            document.getElementById('global-audio').addEventListener('play', () => {
+                if (!window.state.visualizer.audioContext) {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const analyser = audioCtx.createAnalyser();
+                    try {
+                        const source = audioCtx.createMediaElementSource(document.getElementById('global-audio'));
+                        source.connect(analyser); analyser.connect(audioCtx.destination);
+                        window.state.visualizer.audioContext = audioCtx; window.state.visualizer.analyser = analyser;
+                    } catch(e) {}
+                }
+            });
+
+            function draw() {
+                requestAnimationFrame(draw);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (window.state.isPlaying && window.state.visualizer.analyser) {
+                    const dataArray = new Uint8Array(window.state.visualizer.analyser.frequencyBinCount);
+                    window.state.visualizer.analyser.getByteFrequencyData(dataArray);
+                    const barWidth = canvas.width / 24; let x = 0;
+                    for (let i = 0; i < 24; i++) {
+                        let barHeight = (dataArray[i] / 255) * canvas.height * 0.8;
+                        const grad = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+                        grad.addColorStop(0, '#991b1b'); grad.addColorStop(1, '#ef4444');
+                        ctx.fillStyle = grad; ctx.beginPath();
+                        ctx.roundRect(x + 2, canvas.height - barHeight, barWidth - 4, barHeight, [4, 4, 0, 0]); ctx.fill();
+                        x += barWidth;
+                    }
+                } else {
+                    ctx.strokeStyle = 'rgba(220, 38, 38, 0.3)'; ctx.lineWidth = 2; ctx.beginPath();
+                    const t = Date.now() * 0.003;
+                    for (let i = 0; i < canvas.width; i++) {
+                        const y = canvas.height / 2 + Math.sin(i * 0.02 + t) * 10;
+                        if (i === 0) ctx.moveTo(i, y); else ctx.lineTo(i, y);
+                    }
+                    ctx.stroke();
+                }
+            }
+            draw();
+        }
+
+        // Menggunakan FileReader untuk konversi Base64 agar audio & gambar tidak rusak saat direfresh
+        window.previewImage = function(input) {
+            if (input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    window.tempCoverUrl = e.target.result;
+                    document.getElementById('cover-preview-img').src = window.tempCoverUrl;
+                    document.getElementById('cover-placeholder').classList.add('hidden');
+                    document.getElementById('cover-preview-container').classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        window.removeCover = function(e) {
+            if(e) { e.stopPropagation(); e.preventDefault(); }
+            document.getElementById('cover-file').value = '';
+            document.getElementById('cover-placeholder').classList.remove('hidden');
+            document.getElementById('cover-preview-container').classList.add('hidden');
+            window.tempCoverUrl = null;
+        }
+
+        // --- FIX AUDIO MENGGUNAKAN FILEREADER (BASE64) ---
+        window.handleAudioUpload = function(input) {
+            if (input.files[0]) {
+                const file = input.files[0];
+                const placeholder = document.getElementById('audio-placeholder');
+                
+                // Simpan elemen UI asli
+                const originalHTML = `
+                    <i class="fa-regular fa-circle-play text-3xl text-red-400 group-hover:scale-110 transition duration-300"></i>
+                    <p class="text-xs font-semibold text-neutral-300">Pilih File Lagu (MP3, WAV, dll)</p>
+                    <p class="text-[10px] text-neutral-500">Wajib disertakan untuk demo putar</p>
+                `;
+
+                // Tampilkan loading saat file audio sedang dikonversi
+                placeholder.innerHTML = `
+                    <i class="fa-solid fa-spinner fa-spin text-3xl text-red-400 mb-2"></i>
+                    <p class="text-xs font-semibold text-neutral-300">Memproses Audio...</p>
+                    <p class="text-[10px] text-neutral-500">Mohon tunggu sebentar</p>
+                `;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    window.tempAudioUrl = e.target.result; // Audio berubah jadi Base64
+                    
+                    // Kembalikan UI placeholder ke awal untuk upload selanjutnya
+                    placeholder.innerHTML = originalHTML;
+
+                    document.getElementById('audio-file-name').textContent = file.name;
+                    document.getElementById('audio-placeholder').classList.add('hidden');
+                    document.getElementById('audio-loaded-container').classList.remove('hidden');
+                };
+                
+                // Mulai membaca file
+                reader.readAsDataURL(file);
+            }
+        }
+        window.removeAudio = function(e) {
+            if(e) { e.stopPropagation(); e.preventDefault(); }
+            document.getElementById('audio-file').value = '';
+            document.getElementById('audio-placeholder').classList.remove('hidden');
+            document.getElementById('audio-loaded-container').classList.add('hidden');
+            window.tempAudioUrl = null;
+        }
+
+        window.toggleArtistEditMode = function(isEdit) {
+            const vSection = document.getElementById('artist-view-section');
+            const eSection = document.getElementById('artist-edit-section');
+            if (isEdit) {
+                vSection.classList.add('hidden'); eSection.classList.remove('hidden');
+            } else {
+                vSection.classList.remove('hidden'); eSection.classList.add('hidden');
+            }
+        }
+
+        window.openArtistModal = function(artistName, event) {
+            if (event) event.stopPropagation();
+            window.currentEditArtistName = artistName;
+            const songs = window.state.releases.filter(s => s.artis.toLowerCase() === artistName.toLowerCase());
+            let aBio = "", aPhoto = "https://placehold.co/150x150/050505/ef4444?text=" + encodeURIComponent(artistName.charAt(0));
+            if (songs.length > 0) { aBio = songs[0].artisBio || "Belum ada biografi yang ditulis untuk seniman ini."; aPhoto = songs[0].artisPhoto || aPhoto; }
+
+            // Set Inputs untuk Edit Mode
+            document.getElementById('artist-name-input').value = artistName;
+            document.getElementById('artist-bio-input').value = aBio === "Belum ada biografi yang ditulis untuk seniman ini." ? "" : aBio;
+            document.getElementById('artist-photo-preview').src = aPhoto;
+            
+            // Set Elemen Teks & Gambar untuk View Mode
+            document.getElementById('view-artist-name').textContent = artistName;
+            document.getElementById('view-artist-bio').textContent = aBio;
+            document.getElementById('view-artist-photo').src = aPhoto;
+            
+            window.switchCatalogTab('singles'); window.renderArtistCatalog(artistName);
+            window.toggleArtistEditMode(false); // Selalu mulai di View Mode
+            
+            const m = document.getElementById('artist-modal'), c = document.getElementById('artist-modal-content');
+            m.classList.replace('hidden', 'flex'); setTimeout(() => { m.classList.remove('opacity-0'); c.classList.remove('scale-95'); }, 10);
+        }
+
+        window.closeArtistModal = function() {
+            const m = document.getElementById('artist-modal'), c = document.getElementById('artist-modal-content');
+            m.classList.add('opacity-0'); c.classList.add('scale-95');
+            setTimeout(() => { 
+                m.classList.replace('flex', 'hidden'); 
+                document.getElementById('artist-edit-section').reset(); 
+                window.currentEditArtistName = null; 
+            }, 300);
+        }
+
+        // Konversi foto profil artist ke Base64
+        window.previewArtistPhoto = function(input) {
+            if (input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('artist-photo-preview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        window.switchCatalogTab = function(type) {
+            const tS = document.getElementById('tab-cat-singles'), tA = document.getElementById('tab-cat-albums');
+            const lS = document.getElementById('catalog-singles-list'), lA = document.getElementById('catalog-albums-list');
+            if (type === 'singles') {
+                tS.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-red-600/20 text-red-400 border border-red-500/30";
+                tA.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all text-neutral-400 hover:text-white bg-white/5";
+                lS.classList.remove('hidden'); lA.classList.add('hidden');
+            } else {
+                tA.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-red-600/20 text-red-400 border border-red-500/30";
+                tS.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all text-neutral-400 hover:text-white bg-white/5";
+                lA.classList.remove('hidden'); lS.classList.add('hidden');
+            }
+        }
+
+        window.renderArtistCatalog = function(name) {
+            const lS = document.getElementById('catalog-singles-list'), lA = document.getElementById('catalog-albums-list');
+            lS.innerHTML = ''; lA.innerHTML = '';
+            const songs = window.state.releases.filter(s => s.artis.toLowerCase() === name.toLowerCase());
+            const sngls = songs.filter(s => s.tipe !== 'Album'), albms = songs.filter(s => s.tipe === 'Album');
+
+            if (sngls.length === 0) lS.innerHTML = `<div class="text-center py-6 text-neutral-500 text-xs">Belum ada singel.</div>`;
+            else {
+                sngls.forEach(s => {
+                    const idx = window.state.releases.indexOf(s);
+                    const d = document.createElement('div');
+                    d.className = "flex items-center justify-between p-3 rounded-xl bg-neutral-900/50 hover:bg-red-900/20 border border-white/5 group transition";
+                    d.innerHTML = `<div class="flex items-center gap-3"><img src="${s.cover}" class="w-10 h-10 rounded-lg object-cover"><div><h5 class="text-xs font-bold text-neutral-200">${s.judul}</h5><span class="text-[10px] text-neutral-400">${s.genre}</span></div></div><button onclick="window.playTrack(${idx}); window.closeArtistModal();" class="w-8 h-8 rounded-full bg-red-600/10 text-red-400 hover:bg-red-600 hover:text-white transition"><i class="fa-solid fa-play text-[10px] ml-0.5"></i></button>`;
+                    lS.appendChild(d);
+                });
+            }
+
+            if (albms.length === 0) lA.innerHTML = `<div class="text-center py-6 text-neutral-500 text-xs">Belum ada album.</div>`;
+            else {
+                const grp = {};
+                albms.forEach(s => { const k = s.album || "Album Biasa"; if (!grp[k]) grp[k] = []; grp[k].push(s); });
+                for (const [title, tracks] of Object.entries(grp)) {
+                    const block = document.createElement('div'); block.className = "bg-neutral-900/35 p-3 rounded-xl border border-white/5 mb-3";
+                    let trHTML = '';
+                    tracks.forEach(t => {
+                        const idx = window.state.releases.indexOf(t);
+                        trHTML += `<div class="flex justify-between p-2 rounded-lg hover:bg-red-950/30 transition"><span class="text-xs text-neutral-300">${t.judul}</span><button onclick="window.playTrack(${idx}); window.closeArtistModal();" class="text-[10px] text-red-400 hover:text-red-300 font-bold">Putar</button></div>`;
+                    });
+                    block.innerHTML = `<div class="flex justify-between border-b border-white/5 pb-2 mb-1"><span class="text-xs font-extrabold text-red-500 uppercase">${title}</span><span class="text-[9px] px-2 bg-neutral-800 rounded-full flex items-center">${tracks.length} Lagu</span></div>${trHTML}`;
+                    lA.appendChild(block);
+                }
+            }
+        }
+
+        window.showToast = function(title, message, theme = "green") {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-message').textContent = message;
+            const iC = document.getElementById('toast-icon-container');
+            if (theme === "red") { 
+                iC.className = "p-2 bg-red-500/10 text-red-500 rounded-xl"; 
+                iC.innerHTML = '<i class="fa-solid fa-circle-exclamation text-lg"></i>'; 
+                t.style.borderColor = "rgba(239, 68, 68, 0.3)"; 
+            } else { 
+                iC.className = "p-2 bg-emerald-500/10 text-emerald-400 rounded-xl"; 
+                iC.innerHTML = '<i class="fa-solid fa-circle-check text-lg"></i>'; 
+                t.style.borderColor = "rgba(16, 185, 129, 0.3)"; 
+            }
+            t.classList.remove('translate-x-80', 'opacity-0'); t.classList.add('translate-x-0', 'opacity-100');
+            setTimeout(() => { t.classList.remove('translate-x-0', 'opacity-100'); t.classList.add('translate-x-80', 'opacity-0'); }, 4000);
+        }
+
+        window.formatTime = function(secs) {
+            const m = Math.floor(secs / 60) || 0, s = Math.floor(secs % 60) || 0;
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+    </script>
+</body>
+</html>
